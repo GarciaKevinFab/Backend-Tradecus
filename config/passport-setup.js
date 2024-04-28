@@ -11,7 +11,7 @@ passport.use(new GoogleStrategy.Strategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     // Este callbackURL debe coincidir con lo configurado en Google Cloud Platform y tu backend
-    callbackURL: 'http://localhost:4000/api/v1/auth/google/callback'
+    callbackURL: 'https://backend-tradecus.onrender.com/api/v1/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
     console.log('Ejecutando callback para Google Strategy. Perfil recibido:', profile);
 
