@@ -23,12 +23,12 @@ const createPaymentPreference = async (req, res) => {
             }
         ],
         back_urls: {
-            success: "http://localhost:3000/success",
-            failure: "http://localhost:3000/failed",
-            pending: "http://localhost:3000/pending"
+            success: "https://tradecus-tours.com/home",
+            failure: "https://tradecus-tours.com/failed",
+            pending: "https://tradecus-tours.com/pending"
         },
         auto_return: "approved",
-        notification_url: "http://localhost:3000/webhook"
+        notification_url: "https://tradecus-tours.com/webhook"
     };
 
     try {
