@@ -13,7 +13,7 @@ router.get('/google/callback',
         // El usuario está autenticado en este punto, entonces lo redirigimos al frontend
         console.log('Autenticación exitosa, redirigiendo al dashboard del frontend.');
         // Aquí es donde rediriges a tu frontend (asegúrate de que la URL sea correcta)
-        res.redirect('https://admin.tradecus-tours.com/dashboard');
+        res.redirect('https://admin-tradecus.netlify.app//dashboard');
     }
 );
 
