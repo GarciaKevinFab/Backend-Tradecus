@@ -29,8 +29,8 @@ const port = process.env.PORT || 3000;
 
 // Lista blanca de orígenes para CORS
 const whitelist = [
-  'https://tradecus-tours.com', // Dominio principal
-  'https://admin.tradecus-tours.com' // Subdominio de administración
+  'https://tradecus.netlify.app', // Dominio principal
+  'https://admin-tradecus.netlify.app/' // Subdominio de administración
 ];
 // Configuración CORS
 const corsOptions = {
