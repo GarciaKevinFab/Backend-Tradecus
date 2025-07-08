@@ -23,12 +23,12 @@ const createPaymentPreference = async (req, res) => {
             }
         ],
         back_urls: {
-            success: "https://tradecus-tours.com/home",
-            failure: "https://tradecus-tours.com/failed",
-            pending: "https://tradecus-tours.com/pending"
+            success: "https://tradecus.netlify.app/home",
+            failure: "https://tradecus.netlify.app/failed",
+            pending: "https://tradecus.netlify.app/pending"
         },
         auto_return: "approved",
-        notification_url: "https://tradecus-tours.com/webhook"
+        notification_url: "https://tradecus.netlify.app/webhook"
     };
 
     try {
