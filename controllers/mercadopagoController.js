@@ -3,7 +3,17 @@ import Payment from '../models/Payment.js';
 import Booking from '../models/Booking.js';
 
 const createPaymentPreference = async (req, res) => {
-    const { product, quantity, totalPrice, guests } = req.body;
+     const {
+        product,
+        quantity,
+        totalPrice,
+        guests,
+        user,
+        tourId,
+        booking,
+        dni,
+        userData
+    } = req.body;
 
     if (typeof totalPrice !== 'number' || typeof quantity !== 'number') {
         return res.status(400).json({ error: 'totalPrice and quantity should be numbers' });
@@ -35,7 +45,16 @@ const createPaymentPreference = async (req, res) => {
         const response = await mercadopago.preferences.create(preference);
 
         // Guarda la información de los invitados en la base de datos
-        await Payment.create({ paymentId: response.body.id, guests });
+         await Payment.create({
+            paymentId: response.body.id,
+            user,
+            tourId,
+            quantity,
+            totalPrice,
+            booking,
+            dni,
+            userData
+        });
 
         res.status(200).json({
             init_point: response.body.init_point,
