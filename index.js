@@ -28,10 +28,22 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Lista blanca de orígenes para CORS
+const whitelist = [
+    'https://tradecus.netlify.app', // Dominio principal
+    'https://admin-tradecus.netlify.app' // Subdominio de administración
+];
+
 // Configuración CORS
 const corsOptions = {
-    origin: process.env.FRONTEND_URI,
-    credentials: true
+    origin: function (origin, callback) {
+        if (!origin || whitelist.indexOf(origin) !== -1) {
+            callback(null, true); // Origen permitido
+        } else {
+            callback(new Error('Not allowed by CORS')); // Origen no permitido
+        }
+    },
+    credentials: true // Permite enviar cookies y headers de autenticación.
 };
 
 app.use(cors(corsOptions));
