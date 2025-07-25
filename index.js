@@ -15,33 +15,23 @@ import mercadopagoRoute from './routes/mercadopago.js';
 import tourRoute from './routes/tours.js';
 import userRoute from './routes/users.js';
 import authRoute from './routes/auth.js';
-import reviewRoute from './routes/reviews.js';
+import reviewRoutes from './routes/reviews.js';
 import bookingRoute from './routes/bookings.js';
 import dniRoutes from './routes/dni.js';
 import subscribeRoute from './routes/subscribes.js';
 import contactRoutes from './routes/contacts.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import UserMobileRoutes from './routes/usermobile.js';
+import ceeRoutes from './routes/ceeRoutes.js';
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Lista blanca de orígenes para CORS
-const whitelist = [
-  'https://tradecus.netlify.app', // Dominio principal
-  'https://admin-tradecus.netlify.app' // Subdominio de administración
-];
 // Configuración CORS
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.indexOf(origin) !== -1) {
-      callback(null, true); // Origen permitido
-    } else {
-      callback(new Error('Not allowed by CORS')); // Origen no permitido
-    }
-  },
-  credentials: true // Permite enviar cookies y headers de autenticación.
+    origin: process.env.FRONTEND_URI,
+    credentials: true
 };
 
 app.use(cors(corsOptions));
@@ -97,7 +87,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/auth', authRoute);
-app.use('/api/v1/review', reviewRoute);
+app.use('/api/v1/review', reviewRoutes);
 app.use('/api/v1/booking', bookingRoute);
 app.use('/api/v1/dni', dniRoutes);
 app.use('/api/v1/subscribe', subscribeRoute);
@@ -105,7 +95,7 @@ app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/mercadopago', mercadopagoRoute);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/usermobile', UserMobileRoutes);
-
+app.use('/api/v1/cee', ceeRoutes);
 
 // Servir archivos estáticos para las imágenes subidas
 app.use('/uploads', express.static('uploads'));

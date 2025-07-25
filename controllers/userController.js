@@ -122,3 +122,24 @@ export const getCurrentUser = async (req, res) => {
         res.status(500).json({ message: 'Error retrieving user data' });
     }
 };
+
+export const changePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user._id;
+
+    try {
+        const user = await User.findById(userId);
+
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Contraseña actual incorrecta' });
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Error al cambiar la contraseña' });
+    }
+};

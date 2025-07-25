@@ -22,6 +22,12 @@ const UserMobileSchema = new mongoose.Schema({
         type: String,
         default: "user",
     },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
+    verificationToken: String,
+    verificationTokenExpires: Date,
     googleId: {
         type: String,
         required: true,
@@ -29,6 +35,5 @@ const UserMobileSchema = new mongoose.Schema({
         sparse: true
     },
 }, { timestamps: true });
-
 
 export default mongoose.model("UserMobile", UserMobileSchema);

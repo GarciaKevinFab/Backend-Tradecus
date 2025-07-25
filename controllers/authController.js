@@ -3,8 +3,14 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import sendEmail from '../utils/sendEmail.js';
 
-//user registration
+// Función para generar un googleId único
+const generateGoogleId = () => {
+    return 'googleId' + Math.floor(Math.random() * 1000);
+};
+
+// user registration
 export const register = async (req, res) => {
     const { username, email, password, photo, googleId } = req.body;
 
@@ -21,33 +27,48 @@ export const register = async (req, res) => {
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(password, salt);
 
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpires = Date.now() + 3600000;
+
         const newUser = new UserMobile({
             username,
             email,
             password: hash,
             photo,
-            googleId: googleId || generateGoogleId()  // Utiliza generateGoogleId si googleId no está presente
+            googleId: googleId || generateGoogleId(),
+            verificationToken,
+            verificationTokenExpires,
+            isVerified: false,
         });
 
         await newUser.save();
-        res.status(200).json({ success: true, message: 'Successfully created' });
+
+        const verifyLink = `${process.env.BASE_URL}/api/v1/users/verify-email/${verificationToken}`;
+        const html = `
+            <h2>Verifica tu cuenta</h2>
+            <p>Haz clic en este enlace para verificar tu correo:</p>
+            <a href="${verifyLink}">${verifyLink}</a>
+        `;
+
+        try {
+            await sendEmail(newUser.email, "Verifica tu correo", html);
+        } catch (err) {
+            console.error("❌ Error enviando correo:", err);
+            return res.status(500).json({ message: "Error al enviar correo" });
+        }
+
+        res.status(200).json({ success: true, message: 'Usuario creado. Verifica tu correo electrónico.' });
+
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: 'Failed to create. Try again' });
+        res.status(500).json({ success: false, message: 'Fallo al crear el usuario.' });
     }
 };
 
-// Función para generar un googleId único
-const generateGoogleId = () => {
-    return 'googleId' + Math.floor(Math.random() * 1000);
-};
-
-
-//user login
+// user login
 export const login = async (req, res) => {
     try {
         const email = req.body.email;
-
         const user = await UserMobile.findOne({ email });
 
         if (!user) {
@@ -74,6 +95,6 @@ export const login = async (req, res) => {
         }).status(200).json({ token, data: { ...rest }, role });
 
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Faild to login' });
+        res.status(500).json({ success: false, message: 'Failed to login' });
     }
 };

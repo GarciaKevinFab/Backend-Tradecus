@@ -11,29 +11,26 @@ export const getReviews = async (req, res) => {
 };
 
 export const createReview = async (req, res) => {
-    const tourId = req.params.tourId;
-
-    // Comprobación adicional para asegurarse de que el tourId no es nulo y es válido
-    if (!tourId || !tourId.match(/^[0-9a-fA-F]{24}$/)) {
-        return res.status(400).json({ success: false, message: 'Invalid tourId' });
-    }
-
-    const newReview = new Review({ ...req.body });
     try {
-        const savedReview = await newReview.save();
-        console.log('Reseña guardada:', savedReview);
+        const { reviewText, rating } = req.body;
+        const tourId = req.params.tourId;
+        const userId = req.user._id; // ✅ Traer el ID del usuario autenticado
 
-        await Tour.findByIdAndUpdate(tourId, {
-            $push: { reviews: savedReview._id }
+        const newReview = new Review({
+            tourId,
+            userId,            // ✅ Asignar el userId
+            username: req.user.username, // O lo puedes recibir por body, pero mejor desde auth
+            reviewText,
+            rating
         });
 
-        res.status(200).json({ success: true, message: 'Review submitted', data: savedReview });
+        await newReview.save();
+
+        res.status(200).json({ success: true, message: 'Review creada correctamente', data: newReview });
     } catch (err) {
-        console.error('Error al guardar la reseña:', err);
-        res.status(500).json({ success: false, message: 'failed to submit' });
+        res.status(500).json({ success: false, message: 'Error al crear la review', error: err.message });
     }
 };
-
 
 export const deleteReview = async (req, res) => {
     const reviewId = req.params.reviewId;
@@ -51,5 +48,33 @@ export const deleteReview = async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to delete review' });
+    }
+};
+
+export const getReviewsByUser = async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        const reviews = await Review.find({ userId });
+        res.status(200).json({ success: true, data: reviews });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to fetch reviews' });
+    }
+};
+
+export const getReviewStats = async (req, res) => {
+    try {
+        const stats = await Review.aggregate([
+            {
+                $group: {
+                    _id: "$rating",
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+        res.status(200).json(stats);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };

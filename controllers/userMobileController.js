@@ -1,4 +1,7 @@
 import User from '../models/UserMobile.js';
+import sendEmail from '../utils/sendEmail.js';
+import crypto from "crypto";
+import bcrypt from 'bcryptjs';
 
 //create new User
 export const createUser = async (req, res) => {
@@ -120,5 +123,76 @@ export const getCurrentUser = async (req, res) => {
     } catch (err) {
         console.log("Error al obtener el usuario:", err);
         res.status(500).json({ message: 'Error retrieving user data' });
+    }
+};
+
+export const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const user = await User.findOne({
+            verificationToken: token,
+            verificationTokenExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).send("Token inválido o expirado.");
+        }
+
+        user.isVerified = true;
+        user.verificationToken = undefined;
+        user.verificationTokenExpires = undefined;
+        await user.save();
+
+        // 🔁 Redirige a la ruta del frontend
+        res.redirect('http://localhost:3000/email-verified');
+    } catch (error) {
+        console.error("Error verificando el correo:", error);
+        res.status(500).send("Error del servidor.");
+    }
+};
+
+export const resendVerificationEmail = async (req, res) => {
+    console.log('Usuario autenticado:', req.user);
+
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+        if (user.isVerified) return res.status(400).json({ message: "Ya estás verificado" });
+
+        const token = crypto.randomBytes(32).toString("hex");
+        user.verificationToken = token;
+        user.verificationTokenExpires = Date.now() + 3600000;
+        await user.save();
+
+        const verifyUrl = `${process.env.BASE_URL}/${token}`;
+        const html = `<p>Haz clic para verificar: <a href="${verifyUrl}">${verifyUrl}</a></p>`;
+
+        await sendEmail(user.email, "Verifica tu correo", html);
+        res.status(200).json({ message: "Correo reenviado" });
+    } catch (err) {
+        res.status(500).json({ message: "Error al reenviar correo" });
+    }
+};
+
+export const changePassword = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { currentPassword, newPassword } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) return res.status(400).json({ message: 'Contraseña actual incorrecta' });
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        await user.save();
+
+        res.status(200).json({ message: 'Contraseña actualizada correctamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al cambiar contraseña' });
     }
 };

@@ -86,3 +86,48 @@ export const deleteBooking = async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
     }
 };
+
+export const getUserBookingCount = async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        const count = await Booking.countDocuments({ userId });
+        res.status(200).json({ success: true, count });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+export const getMonthlyBookingStats = async (req, res) => {
+    try {
+        const stats = await Booking.aggregate([
+            {
+                $group: {
+                    _id: { $month: "$bookAt" },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+        res.status(200).json(stats);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+export const getMonthlyIncomeStats = async (req, res) => {
+    try {
+        const stats = await Booking.aggregate([
+            {
+                $group: {
+                    _id: { $month: "$bookAt" },
+                    total: { $sum: "$price" }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+        res.status(200).json(stats);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

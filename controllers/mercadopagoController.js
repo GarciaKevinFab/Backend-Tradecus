@@ -3,17 +3,7 @@ import Payment from '../models/Payment.js';
 import Booking from '../models/Booking.js';
 
 const createPaymentPreference = async (req, res) => {
-     const {
-        product,
-        quantity,
-        totalPrice,
-        guests,
-        user,
-        tourId,
-        booking,
-        dni,
-        userData
-    } = req.body;
+    const { product, quantity, totalPrice, guests } = req.body;
 
     if (typeof totalPrice !== 'number' || typeof quantity !== 'number') {
         return res.status(400).json({ error: 'totalPrice and quantity should be numbers' });
@@ -33,28 +23,19 @@ const createPaymentPreference = async (req, res) => {
             }
         ],
         back_urls: {
-            success: "https://tradecus.netlify.app/home",
+            success: "https://tradecus.netlify.app/thank-you",
             failure: "https://tradecus.netlify.app/failed",
             pending: "https://tradecus.netlify.app/pending"
         },
         auto_return: "approved",
-        notification_url: "https://tradecus.netlify.app/webhook"
+        notification_url: "https://backend-tradecus.onrender.com/api/v1/mercadopago/webhook"
     };
 
     try {
         const response = await mercadopago.preferences.create(preference);
 
         // Guarda la información de los invitados en la base de datos
-         await Payment.create({
-            paymentId: response.body.id,
-            user,
-            tourId,
-            quantity,
-            totalPrice,
-            booking,
-            dni,
-            userData
-        });
+        await Payment.create({ paymentId: response.body.id, guests });
 
         res.status(200).json({
             init_point: response.body.init_point,
@@ -78,20 +59,38 @@ const createPaymentPreference = async (req, res) => {
 
 const webhook = async (req, res) => {
     const { type, data } = req.body;
-    if (type === "payment" && data.status === "approved") {
-        // Guarda la información de los invitados en tu tabla de reservas aquí
-        // Puedes usar data.id para buscar la reserva correspondiente
-        // y actualizarla con la información de los invitados y el estado de pago
+
+    if (type === "payment") {
         try {
-            const updatedBooking = await Booking.findOneAndUpdate({ paymentId: data.id }, { paymentStatus: "approved" }, { new: true });
-            if (!updatedBooking) {
-                console.error(`No booking found with paymentId: ${data.id}`);
-            }
+            const payment = await mercadopago.payment.findById(data.id);
+            const paymentData = payment.body;
+
+            console.log("✅ Webhook recibido:", paymentData);
+
+            // Actualiza el estado del pago en tu modelo Payment
+            await Payment.findOneAndUpdate(
+                { paymentId: paymentData.id.toString() },
+                {
+                    paymentStatus: paymentData.status,
+                    payerEmail: paymentData.payer?.email || "No disponible",
+                },
+                { new: true }
+            );
+
+            // Actualiza la reserva asociada (si ya la tienes guardada)
+            await Booking.findOneAndUpdate(
+                { paymentId: paymentData.id.toString() },
+                { paymentStatus: paymentData.status },
+                { new: true }
+            );
+
         } catch (error) {
-            console.error("Error updating booking:", error);
+            console.error("❌ Error procesando el webhook:", error.message);
         }
     }
-    res.status(200).end();
+
+    res.status(200).end(); // responde siempre OK a MP
 };
+
 
 export { createPaymentPreference, webhook };
