@@ -144,7 +144,7 @@ export const verifyEmail = async (req, res) => {
         await user.save();
 
         // 🔁 Redirige a la ruta del frontend
-        res.redirect('http://localhost:3000/email-verified');
+        res.redirect('https://tradecus.netlify.app/email-verified');
     } catch (error) {
         console.error("Error verificando el correo:", error);
         res.status(500).send("Error del servidor.");
@@ -166,7 +166,42 @@ export const resendVerificationEmail = async (req, res) => {
         await user.save();
 
         const verifyUrl = `${process.env.BASE_URL}/${token}`;
-        const html = `<p>Haz clic para verificar: <a href="${verifyUrl}">${verifyUrl}</a></p>`;
+        const html = `
+<div style="font-family: 'Arial', sans-serif; background-color: #f4f4f4; padding: 20px;">
+  <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <h2 style="color: #1e90ff; text-align: center;">🌍 Tradecus Tours</h2>
+    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+    
+    <p style="font-size: 16px; color: #333;">Hola <strong>${user.fullName || user.username || 'usuario'}</strong>,</p>
+    
+    <p style="font-size: 16px; color: #333;">
+      ¡Gracias por registrarte en <strong>Tradecus</strong>! Solo queda un paso más para comenzar a explorar y reservar experiencias increíbles.
+    </p>
+
+    <p style="font-size: 16px; color: #333;">
+      Haz clic en el botón de abajo para verificar tu correo electrónico:
+    </p>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${verifyUrl}" 
+         style="background-color: #1e90ff; color: white; padding: 14px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+         Verificar correo
+      </a>
+    </div>
+
+    <p style="font-size: 14px; color: #666;">
+      Si no te registraste en Tradecus, puedes ignorar este mensaje. Este enlace expirará en 1 hora por motivos de seguridad.
+    </p>
+
+    <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+    <p style="font-size: 13px; color: #999; text-align: center;">
+      Tradecus Tours &copy; ${new Date().getFullYear()}<br>
+      Explora. Reserva. Descubre el mundo con nosotros.
+    </p>
+  </div>
+</div>
+`;
 
         await sendEmail(user.email, "Verifica tu correo", html);
         res.status(200).json({ message: "Correo reenviado" });
