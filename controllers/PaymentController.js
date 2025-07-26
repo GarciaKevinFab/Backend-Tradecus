@@ -1,9 +1,10 @@
 import mercadopago from "mercadopago";
 import Payment from '../models/Payment.js';
 import Booking from '../models/Booking.js';
+import dotenv from 'dotenv';
 
 mercadopago.configure({
-    access_token: process.env.MERCADOPAGO_ACCESS_TOKEN,
+    access_token: process.env.MP_ACCESS_TOKEN
 });
 
 export const createPayment = async (req, res) => {
