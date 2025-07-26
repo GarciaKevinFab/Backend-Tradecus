@@ -3,7 +3,13 @@ import UserMobile from '../models/UserMobile.js';
 
 const ensureAuthenticated = async (req, res, next) => {
     try {
-        const token = req.cookies.accessToken;
+        // 1. Busca primero en headers (Bearer) y si no, en cookies
+        let token;
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        } else if (req.cookies && req.cookies.accessToken) {
+            token = req.cookies.accessToken;
+        }
 
         if (!token) {
             return res.status(401).json({ success: false, message: 'No token, autorización denegada' });
