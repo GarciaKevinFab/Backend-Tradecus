@@ -1,5 +1,6 @@
 import express from 'express';
 import passport from 'passport';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
@@ -10,11 +11,16 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get('/google/callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
     (req, res) => {
-        // El usuario está autenticado en este punto, entonces lo redirigimos al frontend
-        console.log('Autenticación exitosa, redirigiendo al dashboard del frontend.');
-        // Aquí es donde rediriges a tu frontend (asegúrate de que la URL sea correcta)
-        res.redirect('https://admin-tradecus.netlify.app/dashboard');
+        // Asegúrate que req.user tenga el usuario ya creado o buscado por Passport
+        const user = req.user;
+        // Genera un JWT igual que tu login normal
+        const token = jwt.sign(
+            { id: user._id, role: user.role }, // lo que quieras poner en el payload
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: "15d" }
+        );
+        // Redirige con el token como query param
+        res.redirect(`https://admin-tradecus.netlify.app/dashboard?token=${token}`);
     }
 );
-
 export default router;
