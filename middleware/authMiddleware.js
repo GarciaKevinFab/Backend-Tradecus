@@ -2,13 +2,14 @@
 import jwt from 'jsonwebtoken';
 
 // Middleware para Passport (autenticación por sesión, Google, etc.)
-export function ensureAuthenticated(req, res, next) {
+function ensureAuthenticated(req, res, next) {
     // Si el usuario está autenticado por sesión (ej: Google OAuth)
     if (req.isAuthenticated && req.isAuthenticated()) {
         return next();
     }
     return res.status(401).send('Usuario no autenticado. No autorizado.');
 }
+export default ensureAuthenticated;
 
 // Middleware para JWT (autenticación por token, normal de APIs)
 export function verifyToken(req, res, next) {
