@@ -33,7 +33,9 @@ const bookingSchema = new mongoose.Schema(
             apellidoPaterno: String,
             apellidoMaterno: String,
             // Include any other fields that are part of the DNI data
-        }]
+        }],
+        price: { type: Number, required: true }
+
     },
     { timestamps: true }
 );
