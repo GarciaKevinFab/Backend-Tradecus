@@ -5,7 +5,7 @@ import {
     deleteBooking, getUserBookingCount,
     getMonthlyBookingStats, getMonthlyIncomeStats,
     getDailyIncomeStats,
-    getFortnightIncomeStats
+    getUserBookings
 } from '../controllers/bookingController.js';
 
 const router = express.Router();
@@ -16,6 +16,7 @@ router.get('/', getAllBooking);
 router.put('/:id', updateBooking);
 router.delete('/:id', deleteBooking);
 router.get('/user/:userId/count', getUserBookingCount);
+router.get('/user/:userId', getUserBookings);
 
 router.get('/count/:tourId', getBookingCount);
 router.get('/stats/monthly', getMonthlyBookingStats);

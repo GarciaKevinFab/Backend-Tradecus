@@ -181,3 +181,14 @@ export const getDailyIncomeStats = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// Trae TODAS las reservas de un usuario específico
+export const getUserBookings = async (req, res) => {
+    const userId = req.params.userId;
+    try {
+        const bookings = await Booking.find({ userId });
+        res.status(200).json({ success: true, data: bookings });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
