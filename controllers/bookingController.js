@@ -192,3 +192,53 @@ export const getUserBookings = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// RESERVAS POR QUINCENA
+export const getFortnightBookingStats = async (req, res) => {
+    try {
+        const stats = await Booking.aggregate([
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$bookAt" },
+                        month: { $month: "$bookAt" },
+                        fortnight: {
+                            $cond: [
+                                { $lte: [{ $dayOfMonth: "$bookAt" }, 15] },
+                                1,
+                                2
+                            ]
+                        }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1, "_id.fortnight": 1 } }
+        ]);
+        res.status(200).json(stats);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// RESERVAS POR DÍA
+export const getDailyBookingStats = async (req, res) => {
+    try {
+        const stats = await Booking.aggregate([
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$bookAt" },
+                        month: { $month: "$bookAt" },
+                        day: { $dayOfMonth: "$bookAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
+        ]);
+        res.status(200).json(stats);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
