@@ -3,7 +3,9 @@ import {
     createBooking, getAllBooking,
     getBooking, updateBooking, getBookingCount,
     deleteBooking, getUserBookingCount,
-    getMonthlyBookingStats, getMonthlyIncomeStats
+    getMonthlyBookingStats, getMonthlyIncomeStats,
+    getDailyIncomeStats,
+    getFortnightIncomeStats
 } from '../controllers/bookingController.js';
 
 const router = express.Router();
@@ -18,5 +20,7 @@ router.get('/user/:userId/count', getUserBookingCount);
 router.get('/count/:tourId', getBookingCount);
 router.get('/stats/monthly', getMonthlyBookingStats);
 router.get('/stats/income', getMonthlyIncomeStats);
+router.get('/stats/income/daily', getDailyIncomeStats);
+router.get('/stats/income/fortnight', getFortnightIncomeStats);
 
 export default router;

@@ -131,3 +131,53 @@ export const getMonthlyIncomeStats = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// Ingresos por QUINCENA
+export const getFortnightIncomeStats = async (req, res) => {
+    try {
+        const stats = await Booking.aggregate([
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$bookAt" },
+                        month: { $month: "$bookAt" },
+                        fortnight: {
+                            $cond: [
+                                { $lte: [{ $dayOfMonth: "$bookAt" }, 15] },
+                                1,
+                                2
+                            ]
+                        }
+                    },
+                    total: { $sum: "$price" }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1, "_id.fortnight": 1 } }
+        ]);
+        res.status(200).json(stats);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Ingresos por DÍA
+export const getDailyIncomeStats = async (req, res) => {
+    try {
+        const stats = await Booking.aggregate([
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$bookAt" },
+                        month: { $month: "$bookAt" },
+                        day: { $dayOfMonth: "$bookAt" }
+                    },
+                    total: { $sum: "$price" }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
+        ]);
+        res.status(200).json(stats);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
